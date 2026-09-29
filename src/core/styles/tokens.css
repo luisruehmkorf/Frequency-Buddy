@@ -1,0 +1,84 @@
+/* Design-Tokens laut docs/DESIGN.md. Hell, Dunkel und Fokusbühne. */
+
+@font-face {
+  font-family: 'Manrope';
+  src: url('../../assets/fonts/Manrope-Variable.woff2') format('woff2');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Hell: Off-White, Navy-Tinte */
+  --bg: #F4F3EE;
+  --stage: #E2E1DA;
+  --surface: #FBFAF7;
+  --fill: #E9E8E2;
+  --thumb: #FBFAF7;
+  --text: #12213F;
+  --text2: #5A6579;
+  --line: #E2E0D8;
+  --btn-bg: #12213F;
+  --btn-fg: #F4F3EE;
+  --hl: #4D8FE3;
+
+  /* Wellenlinie (Atemmoment): hellblaue Abstufungen */
+  --w1: #7DB8F7;
+  --w2: #A9D3FB;
+  --w3: #D7EBFE;
+
+  /* Startseite: gefüllte Wellen */
+  --hero-card: #E8F1FB;
+  --wf-b: #D6E7F9;
+  --wf-m: #BFD9F4;
+  --wf-f: #A6C9EF;
+
+  /* Tageslicht (wirkt im Dunkelmodus) */
+  --a1: #FFC15E;
+  --a2: #FF7F5B;
+
+  --font: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --shadow-thumb: 0 1px 3px rgba(0, 0, 0, 0.14);
+}
+
+:root[data-phase='morning'] { --a1: #FFC15E; --a2: #FF7F5B; }
+:root[data-phase='evening'] { --a1: #7CC4FF; --a2: #9A8CFF; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #050608; --stage: #000000; --surface: #0F1217; --fill: #171B22; --thumb: #2A303A;
+    --text: #F4F3EE; --text2: #8B909A; --line: #1C2028;
+    --btn-bg: #F4F3EE; --btn-fg: #050608; --hl: var(--a1);
+    --w1: var(--a1); --w2: color-mix(in srgb, var(--a1) 50%, var(--a2)); --w3: var(--a2);
+    --hero-card: #0F1A2E; --wf-b: #15264A; --wf-m: #1B3260; --wf-f: #234072;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #050608; --stage: #000000; --surface: #0F1217; --fill: #171B22; --thumb: #2A303A;
+  --text: #F4F3EE; --text2: #8B909A; --line: #1C2028;
+  --btn-bg: #F4F3EE; --btn-fg: #050608; --hl: var(--a1);
+  --w1: var(--a1); --w2: color-mix(in srgb, var(--a1) 50%, var(--a2)); --w3: var(--a2);
+  --hero-card: #0F1A2E; --wf-b: #15264A; --wf-m: #1B3260; --wf-f: #234072;
+}
+
+/* Fokusbühne: im Hellmodus Navy, im Dunkelmodus Schwarz */
+.app.immersive {
+  --bg: #0F1B36; --surface: #182848; --fill: #1F3156; --thumb: #2B4170;
+  --text: #F4F3EE; --text2: #9AA8C2; --line: #23355A;
+  --btn-bg: #F4F3EE; --btn-fg: #0F1B36;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .app.immersive {
+    --bg: #050608; --surface: #0F1217; --fill: #171B22; --thumb: #2A303A;
+    --text: #F4F3EE; --text2: #8B909A; --line: #1C2028;
+    --btn-bg: #F4F3EE; --btn-fg: #050608;
+  }
+}
+
+:root[data-theme='dark'] .app.immersive {
+  --bg: #050608; --surface: #0F1217; --fill: #171B22; --thumb: #2A303A;
+  --text: #F4F3EE; --text2: #8B909A; --line: #1C2028;
+  --btn-bg: #F4F3EE; --btn-fg: #050608;
+}

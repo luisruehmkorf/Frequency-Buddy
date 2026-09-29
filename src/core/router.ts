@@ -1,0 +1,61 @@
+// Einfacher Router: fünf Tabs, jeder Tab rendert seine Ansicht in #screen.
+
+import { fromHTML } from './ui/dom';
+
+export type TabId = 'heute' | 'vorsaetze' | 'kueche' | 'connection' | 'inspiration';
+
+export interface ViewResult {
+  nodes: Node[];
+  /** Fokusbühne (dunkel) statt heller Fläche. */
+  immersive?: boolean;
+}
+
+export interface Tab {
+  id: TabId;
+  label: string;
+  icon: string;
+  render: () => ViewResult;
+}
+
+export const TAB_ORDER: TabId[] = ['heute', 'vorsaetze', 'kueche', 'connection', 'inspiration'];
+
+let tabs: Tab[] = [];
+let current: TabId = 'heute';
+
+export function registerTabs(list: Tab[]): void {
+  tabs = list;
+}
+
+export function currentTab(): TabId {
+  return current;
+}
+
+export function go(id: TabId): void {
+  current = id;
+  render();
+}
+
+export function render(): void {
+  const screen = document.getElementById('screen')!;
+  const app = document.getElementById('app')!;
+  const tab = tabs.find((t) => t.id === current)!;
+  const view = tab.render();
+  app.classList.toggle('immersive', !!view.immersive);
+  screen.replaceChildren(...view.nodes);
+  screen.scrollTop = 0;
+  renderTabbar();
+}
+
+function renderTabbar(): void {
+  const bar = document.getElementById('tabbar')!;
+  bar.replaceChildren(
+    ...tabs.map((t) => {
+      const btn = document.createElement('button');
+      btn.className = 'tab';
+      if (t.id === current) btn.setAttribute('aria-current', 'page');
+      btn.append(fromHTML(t.icon), Object.assign(document.createElement('span'), { textContent: t.label }));
+      btn.addEventListener('click', () => go(t.id));
+      return btn;
+    }),
+  );
+}
