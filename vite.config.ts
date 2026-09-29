@@ -1,4 +1,4 @@
-import { readdirSync, writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
@@ -22,6 +22,9 @@ function precacheList(): Plugin {
       const skip = new Set(['precache.json', 'sw.js']);
       const files = walk(outDir).filter((f) => !skip.has(f) && !f.endsWith('.map') && f !== '.DS_Store');
       writeFileSync(join(outDir, 'precache.json'), JSON.stringify(files));
+      // Jede Version bekommt eine eigene Cache-Kennung im Service Worker.
+      const swPath = join(outDir, 'sw.js');
+      writeFileSync(swPath, readFileSync(swPath, 'utf8').replace('__BUILD__', Date.now().toString(36)));
     },
   };
 }

@@ -1,6 +1,7 @@
 // Service Worker: Cache der App-Dateien, Start ohne Netz.
-// Bei einer neuen Version die Zahl erhöhen. Daten in IndexedDB bleiben davon unberührt.
-const CACHE = 'fb-cache-v1';
+// Die Kennung wird beim Build ersetzt, damit jede Version einen eigenen Cache bekommt.
+// Daten in IndexedDB bleiben davon unberührt.
+const CACHE = 'fb-cache-__BUILD__';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -16,6 +17,7 @@ self.addEventListener('install', (event) => {
       }
       const urls = ['./', 'manifest.webmanifest', ...files].map((f) => new URL(f, base).href);
       await cache.addAll(urls);
+      await self.skipWaiting();
     })()
   );
 });
@@ -33,6 +35,24 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
+  // Startseite: zuerst Netz (damit Updates ankommen), ohne Netz aus dem Cache.
+  if (req.mode === 'navigate') {
+    event.respondWith(
+      (async () => {
+        try {
+          const res = await fetch(req);
+          if (res.ok) (await caches.open(CACHE)).put(new URL('./', self.registration.scope).href, res.clone());
+          return res;
+        } catch (e) {
+          const shell = await caches.match(new URL('./', self.registration.scope).href);
+          if (shell) return shell;
+          throw e;
+        }
+      })()
+    );
+    return;
+  }
+  // Dateien mit Hash im Namen: aus dem Cache, sonst Netz und merken.
   event.respondWith(
     (async () => {
       const cached = await caches.match(req, { ignoreSearch: true });
@@ -42,10 +62,6 @@ self.addEventListener('fetch', (event) => {
         if (res.ok) (await caches.open(CACHE)).put(req, res.clone());
         return res;
       } catch (e) {
-        if (req.mode === 'navigate') {
-          const shell = await caches.match(new URL('./', self.registration.scope).href);
-          if (shell) return shell;
-        }
         throw e;
       }
     })()
