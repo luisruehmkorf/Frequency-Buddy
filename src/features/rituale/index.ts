@@ -5,11 +5,14 @@ import { h, fromHTML } from '../../core/ui/dom';
 import { ICON } from '../../core/ui/icons';
 import { breathLine, doneMoment } from '../../core/ui/waves';
 import { pillButton, textButton } from '../../core/ui/components';
-import { put, newId } from '../../core/db';
+import { put, getAll, newId } from '../../core/db';
+import type { Intention } from '../../core/models';
+import { activeIntentions } from '../../logic/intentions';
 import { loadSettings } from '../../core/settings';
 import { impulseKind } from '../../logic/impulse';
 import {
   nextStep,
+  stepsFor,
   buildMorningEntry,
   buildEveningEntry,
   type RitualKind,
@@ -21,7 +24,9 @@ import { openOverlay, closeOverlay, render, type ViewResult } from '../../core/r
 
 interface Flow {
   kind: RitualKind;
+  steps: Step[];
   step: Step;
+  intentions: Intention[];
   morning: MorningDraft;
   evening: EveningDraft;
 }
@@ -34,10 +39,13 @@ let doneTimer = 0;
 
 export async function startRitual(kind: RitualKind): Promise<void> {
   const settings = await loadSettings();
+  const intentions = kind === 'morning' ? activeIntentions(await getAll<Intention>('intentions').catch(() => [])) : [];
   flow = {
     kind,
+    steps: stepsFor(kind, intentions.length > 0),
     step: 'breath',
-    morning: { promptKind: impulseKind(settings.impulseMode, new Date()), text: '' },
+    intentions,
+    morning: { promptKind: impulseKind(settings.impulseMode, new Date()), text: '', intentionId: '' },
     evening: { good: '', letGo: '', stressOrFear: '' },
   };
   openOverlay(renderRitual);
@@ -66,13 +74,14 @@ function advance(keep: boolean): void {
   if (!f) return;
   if (!keep) {
     if (f.step === 'impulse') f.morning.text = '';
+    if (f.step === 'intention') f.morning.intentionId = '';
     if (f.step === 'good') f.evening.good = '';
     if (f.step === 'letgo') {
       f.evening.letGo = '';
       f.evening.stressOrFear = '';
     }
   }
-  f.step = nextStep(f.kind, f.step);
+  f.step = nextStep(f.steps, f.step);
   if (f.step === 'done') {
     save(f);
     doneTimer = window.setTimeout(exit, DONE_MS);
@@ -124,6 +133,29 @@ function renderRitual(): ViewResult {
   if (f.step === 'done') {
     const text = f.kind === 'morning' ? de.ritual.morning.done : de.ritual.evening.done;
     return { ...base, nodes: [closeButton(), doneMoment(text), h('div', { class: 'actions' }, textButton(de.ritual.back, exit))] };
+  }
+
+  if (f.step === 'intention') {
+    const choose = (id: string) => {
+      f.morning.intentionId = id;
+      render();
+    };
+    const pick = (label: string, id: string, why?: string) =>
+      h(
+        'button',
+        { class: 'chip big', 'aria-pressed': String(f.morning.intentionId === id), onclick: () => choose(id) },
+        label,
+        why ? h('span', { class: 'small' }, why) : null,
+      );
+    return {
+      ...base,
+      nodes: [
+        closeButton(),
+        h('h1', { class: 'q' }, de.ritual.morning.intention),
+        h('div', { class: 'stack' }, ...f.intentions.map((i) => pick(i.what, i.id, i.why)), pick(de.ritual.morning.none, '')),
+        actions(de.ritual.finish, false),
+      ],
+    };
   }
 
   if (f.kind === 'morning') {

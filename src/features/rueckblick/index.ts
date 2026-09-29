@@ -6,12 +6,13 @@ import { h, fromHTML } from '../../core/ui/dom';
 import { ICON } from '../../core/ui/icons';
 import { emptyState, groupedList, pillButton } from '../../core/ui/components';
 import { getAll, put } from '../../core/db';
-import type { EveningEntry, MorningEntry } from '../../core/models';
+import type { EveningEntry, Intention, MorningEntry } from '../../core/models';
 import { openOverlay, closeOverlay, render, type ViewResult } from '../../core/router';
 
 type Item = ({ type: 'morning' } & MorningEntry) | ({ type: 'evening' } & EveningEntry);
 
 let items: Item[] = [];
+let intentionNames = new Map<string, string>();
 let editing: Item | null = null;
 
 async function load(): Promise<Item[]> {
@@ -28,6 +29,8 @@ async function load(): Promise<Item[]> {
 
 export async function openRueckblick(): Promise<void> {
   items = await load();
+  const intentions = await getAll<Intention>('intentions').catch(() => []);
+  intentionNames = new Map(intentions.map((i) => [i.id, i.what]));
   editing = null;
   openOverlay(renderRueckblick);
 }
@@ -50,6 +53,8 @@ function body(item: Item): HTMLElement[] {
   const out: HTMLElement[] = [];
   if (item.type === 'morning') {
     if (item.text) out.push(h('p', {}, item.text));
+    const intention = item.intentionId ? intentionNames.get(item.intentionId) : undefined;
+    if (intention) out.push(h('div', { class: 'small' }, `${t.intention} ${intention}`));
   } else {
     if (item.good) out.push(h('p', {}, item.good));
     if (item.letGo) out.push(h('p', { class: 'mut' }, `${t.letGo} ${item.letGo}`));

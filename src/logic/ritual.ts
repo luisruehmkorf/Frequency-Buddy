@@ -4,16 +4,16 @@
 import type { EveningEntry, ImpulseKind, MorningEntry } from '../core/models';
 
 export type RitualKind = 'morning' | 'evening';
-export type Step = 'breath' | 'impulse' | 'good' | 'letgo' | 'done';
+export type Step = 'breath' | 'impulse' | 'intention' | 'good' | 'letgo' | 'done';
 
-export const STEPS: Record<RitualKind, Step[]> = {
-  morning: ['breath', 'impulse', 'done'],
-  evening: ['breath', 'good', 'letgo', 'done'],
-};
+/** Schrittfolge. Der Vorsatz-Schritt erscheint nur, wenn es aktive Vorsätze gibt. */
+export function stepsFor(kind: RitualKind, hasIntentions: boolean): Step[] {
+  if (kind === 'evening') return ['breath', 'good', 'letgo', 'done'];
+  return hasIntentions ? ['breath', 'impulse', 'intention', 'done'] : ['breath', 'impulse', 'done'];
+}
 
 /** Nächster Schritt. Nach dem letzten Schritt bleibt es bei 'done'. */
-export function nextStep(kind: RitualKind, current: Step): Step {
-  const steps = STEPS[kind];
+export function nextStep(steps: Step[], current: Step): Step {
   const i = steps.indexOf(current);
   return steps[Math.min(i + 1, steps.length - 1)];
 }
@@ -21,6 +21,8 @@ export function nextStep(kind: RitualKind, current: Step): Step {
 export interface MorningDraft {
   promptKind: ImpulseKind;
   text: string;
+  /** Leer = kein Vorsatz gewählt */
+  intentionId: string;
 }
 
 export interface EveningDraft {
@@ -36,8 +38,12 @@ const clean = (s: string): string | undefined => {
 
 export function buildMorningEntry(draft: MorningDraft, id: string, now: Date): MorningEntry | null {
   const text = clean(draft.text);
-  if (!text) return null;
-  return { id, date: now.toISOString(), promptKind: draft.promptKind, text };
+  const intentionId = clean(draft.intentionId);
+  if (!text && !intentionId) return null;
+  const entry: MorningEntry = { id, date: now.toISOString(), promptKind: draft.promptKind };
+  if (text) entry.text = text;
+  if (intentionId) entry.intentionId = intentionId;
+  return entry;
 }
 
 export function buildEveningEntry(draft: EveningDraft, id: string, now: Date): EveningEntry | null {

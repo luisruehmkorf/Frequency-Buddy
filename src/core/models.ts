@@ -19,3 +19,23 @@ export interface EveningEntry {
   letGo?: string;
   stressOrFear?: string;
 }
+
+export interface Intention {
+  id: string;
+  /** Was (Pflicht) */
+  what: string;
+  why?: string;
+  whenWhere?: string;
+  /** aktiv oder pausiert. Kein "erledigt", kein "gescheitert". */
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface Task {
+  id: string;
+  text: string;
+  isDone: boolean;
+  /** Kleinere Zahl steht weiter oben. Neue Aufgaben bekommen die kleinste Zahl. */
+  sortOrder: number;
+  createdAt: string;
+}
