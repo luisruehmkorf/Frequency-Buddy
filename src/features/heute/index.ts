@@ -8,7 +8,7 @@ function greeting(hour: number): string {
   return de.heute.greetingEvening;
 }
 
-export function renderHeute(now: Date = new Date()): ViewResult {
+export function renderHeute(onSettings: () => void, now: Date = new Date()): ViewResult {
   const date = now.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
-  return { nodes: [heroCard({ date, greeting: greeting(now.getHours()), sub: de.heute.sub, settingsLabel: de.heute.settings })] };
+  return { nodes: [heroCard({ date, greeting: greeting(now.getHours()), sub: de.heute.sub, onSettings, settingsLabel: de.heute.settings })] };
 }

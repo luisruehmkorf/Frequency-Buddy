@@ -6,19 +6,25 @@ import { de } from './texts/de';
 import { ICON } from './core/ui/icons';
 import { mountWaveGradient } from './core/ui/waves';
 import { applyPhase } from './core/theme';
-import { registerTabs, render, go } from './core/router';
+import { registerTabs, render, go, openOverlay, closeOverlay } from './core/router';
+import { loadSettings, applyTheme } from './core/settings';
 import { openDB } from './core/db';
 import { renderHeute } from './features/heute';
+import { renderEinstellungen } from './features/einstellungen';
 import { renderVorsaetze } from './features/vorsaetze';
 import { renderKueche } from './features/kueche';
 import { renderConnection } from './features/connection';
 import { renderInspiration } from './features/inspiration';
 
+function openSettings(): void {
+  openOverlay(() => renderEinstellungen(render, closeOverlay));
+}
+
 applyPhase();
 mountWaveGradient();
 
 registerTabs([
-  { id: 'heute', label: de.tabs.heute, icon: ICON.heute, render: () => renderHeute() },
+  { id: 'heute', label: de.tabs.heute, icon: ICON.heute, render: () => renderHeute(openSettings) },
   { id: 'vorsaetze', label: de.tabs.vorsaetze, icon: ICON.vorsaetze, render: () => renderVorsaetze(render) },
   { id: 'kueche', label: de.tabs.kueche, icon: ICON.kueche, render: renderKueche },
   { id: 'connection', label: de.tabs.connection, icon: ICON.connection, render: renderConnection },
@@ -26,6 +32,9 @@ registerTabs([
 ]);
 
 go('heute');
+
+// Gespeicherte Darstellung anwenden (Hell, Dunkel oder Automatisch).
+loadSettings().then((s) => applyTheme(s.theme));
 
 // Datenbank früh öffnen, damit Migrationen beim Start laufen.
 openDB().catch(() => {

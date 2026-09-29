@@ -21,6 +21,7 @@ export const TAB_ORDER: TabId[] = ['heute', 'vorsaetze', 'kueche', 'connection',
 
 let tabs: Tab[] = [];
 let current: TabId = 'heute';
+let overlay: (() => ViewResult) | null = null;
 
 export function registerTabs(list: Tab[]): void {
   tabs = list;
@@ -31,7 +32,19 @@ export function currentTab(): TabId {
 }
 
 export function go(id: TabId): void {
+  overlay = null;
   current = id;
+  render();
+}
+
+/** Zeigt eine Ansicht über dem aktuellen Tab (z. B. Einstellungen). Die Tab-Leiste bleibt sichtbar. */
+export function openOverlay(view: () => ViewResult): void {
+  overlay = view;
+  render();
+}
+
+export function closeOverlay(): void {
+  overlay = null;
   render();
 }
 
@@ -39,7 +52,7 @@ export function render(): void {
   const screen = document.getElementById('screen')!;
   const app = document.getElementById('app')!;
   const tab = tabs.find((t) => t.id === current)!;
-  const view = tab.render();
+  const view = overlay ? overlay() : tab.render();
   app.classList.toggle('immersive', !!view.immersive);
   screen.replaceChildren(...view.nodes);
   screen.scrollTop = 0;

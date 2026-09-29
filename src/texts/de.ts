@@ -32,6 +32,18 @@ export const de = {
     tasksEmpty: 'Nichts offen. Das darf auch mal so sein.',
   },
 
+  einstellungen: {
+    title: 'Einstellungen',
+    back: 'Zurück',
+    appearance: 'Darstellung',
+    themeAuto: 'Automatisch',
+    themeLight: 'Hell',
+    themeDark: 'Dunkel',
+    info: 'Info',
+    version: 'Version',
+    privacy: 'Deine Daten liegen nur auf diesem iPhone.',
+  },
+
   kueche: {
     empty: 'Noch kein Gericht. Was kochst du gern?',
   },
