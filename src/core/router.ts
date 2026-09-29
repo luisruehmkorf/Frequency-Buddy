@@ -8,6 +8,10 @@ export interface ViewResult {
   nodes: Node[];
   /** Fokusbühne (dunkel) statt heller Fläche. */
   immersive?: boolean;
+  /** Tab-Leiste ausblenden (Rituale, Vollbild). */
+  hideTabbar?: boolean;
+  /** Inhalt als Spalte, Aktionen unten (Fragen, Atemlinie). */
+  center?: boolean;
 }
 
 export interface Tab {
@@ -54,9 +58,11 @@ export function render(): void {
   const tab = tabs.find((t) => t.id === current)!;
   const view = overlay ? overlay() : tab.render();
   app.classList.toggle('immersive', !!view.immersive);
+  screen.classList.toggle('center', !!view.center);
   screen.replaceChildren(...view.nodes);
   screen.scrollTop = 0;
   renderTabbar();
+  document.getElementById('tabbar')!.hidden = !!view.hideTabbar;
 }
 
 function renderTabbar(): void {

@@ -128,6 +128,7 @@ export function breathLine(): BreathHandle {
       label.textContent = `Noch ${left} Sekunden`;
       const tick = () => {
         timer = window.setTimeout(() => {
+          if (!element.isConnected) return;
           left--;
           if (left <= 0) return finish();
           label.textContent = `Noch ${left} Sekunden`;
@@ -140,6 +141,7 @@ export function breathLine(): BreathHandle {
     const t0 = performance.now();
     label.textContent = 'Einatmen';
     const frame = (now: number) => {
+      if (!element.isConnected) return; // Ansicht gewechselt: Animation endet
       const t = (now - t0) / 1000;
       const p = Math.min(t / seconds, 1);
       draw(Math.pow(Math.sin(Math.PI * p), 0.9), t);

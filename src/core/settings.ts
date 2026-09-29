@@ -2,14 +2,17 @@
 
 import { get, put } from './db';
 
+import type { ImpulseMode } from './models';
+
 export type Theme = 'auto' | 'light' | 'dark';
 
 export interface AppSettings {
   id: 'singleton';
   theme: Theme;
+  impulseMode: ImpulseMode;
 }
 
-export const DEFAULT_SETTINGS: AppSettings = { id: 'singleton', theme: 'auto' };
+export const DEFAULT_SETTINGS: AppSettings = { id: 'singleton', theme: 'auto', impulseMode: 'alternate' };
 
 /** Wert für data-theme am <html>. Bei 'auto' entfällt das Attribut, dann gilt prefers-color-scheme. */
 export function themeAttribute(theme: Theme): 'light' | 'dark' | null {

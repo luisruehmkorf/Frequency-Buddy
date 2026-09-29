@@ -1,5 +1,7 @@
 import { de } from '../../texts/de';
-import { heroCard } from '../../core/ui/components';
+import { heroCard, groupedList, navRow } from '../../core/ui/components';
+import { suggestedRitual } from '../../logic/impulse';
+import type { RitualKind } from '../../logic/ritual';
 import type { ViewResult } from '../../core/router';
 
 function greeting(hour: number): string {
@@ -8,7 +10,29 @@ function greeting(hour: number): string {
   return de.heute.greetingEvening;
 }
 
-export function renderHeute(onSettings: () => void, now: Date = new Date()): ViewResult {
+export interface HeuteActions {
+  onSettings: () => void;
+  onStart: (kind: RitualKind) => void;
+  onRueckblick: () => void;
+}
+
+export function renderHeute(actions: HeuteActions, now: Date = new Date()): ViewResult {
   const date = now.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
-  return { nodes: [heroCard({ date, greeting: greeting(now.getHours()), sub: de.heute.sub, onSettings, settingsLabel: de.heute.settings })] };
+  const suggested = suggestedRitual(now.getHours());
+  const ritual = (kind: RitualKind) =>
+    navRow({
+      title: de.heute[kind].title,
+      meta: de.heute[kind].meta,
+      highlight: suggested === kind,
+      onClick: () => actions.onStart(kind),
+    });
+  // Das passende Ritual steht oben
+  const rituals = suggested === 'evening' ? [ritual('evening'), ritual('morning')] : [ritual('morning'), ritual('evening')];
+
+  return {
+    nodes: [
+      heroCard({ date, greeting: greeting(now.getHours()), sub: de.heute.sub, onSettings: actions.onSettings, settingsLabel: de.heute.settings }),
+      groupedList(...rituals, navRow({ title: de.heute.rueckblick.title, meta: de.heute.rueckblick.meta, onClick: actions.onRueckblick })),
+    ],
+  };
 }

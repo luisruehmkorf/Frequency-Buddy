@@ -7,7 +7,8 @@ describe('Einstellungen', () => {
     expect(themeAttribute('light')).toBe('light');
     expect(themeAttribute('dark')).toBe('dark');
   });
-  it('Standard ist Automatisch', () => {
+  it('Standard ist Automatisch und Impuls im Wechsel', () => {
     expect(DEFAULT_SETTINGS.theme).toBe('auto');
+    expect(DEFAULT_SETTINGS.impulseMode).toBe('alternate');
   });
 });
